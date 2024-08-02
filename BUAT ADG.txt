@@ -1,0 +1,472 @@
+SQL> select name from v$datafile;
+
+NAME
+--------------------------------------------------------------------------------
+/oracle/oradata/orcl/system01.dbf
+/oracle/oradata/orcl/sysaux01.dbf
+/oracle/oradata/orcl/undotbs01.dbf
+/oracle/oradata/orcl/users01.dbf
+
+SQL> select name from v$tempfile;
+
+NAME
+--------------------------------------------------------------------------------
+/oracle/oradata/orcl/temp01.dbf
+
+SQL> select name from v$controlfile;
+
+NAME
+--------------------------------------------------------------------------------
+/oracle/oradata/orcl/control01.ctl
+/oracle/fast_recovery_area/orcl/control02.ctl
+
+SQL> select member from v$logfile;
+
+MEMBER
+--------------------------------------------------------------------------------
+/oracle/oradata/orcl/redo03.log
+/oracle/oradata/orcl/redo02.log
+/oracle/oradata/orcl/redo01.log
+/oracle/oradata/orcl/redo04.log
+/oracle/oradata/orcl/redo05.log
+/oracle/oradata/orcl/redo06.log
+/oracle/oradata/orcl/redo07.log
+/oracle/oradata/orcl/standby_redo01.log
+
+SQL> shutdown immediate;
+ORA-01109: database not open
+
+Database dismounted.
+ORACLE instance shut down.
+SQL> startup mount exclusive restrict;
+ORACLE instance started.
+
+Total System Global Area 1308622848 bytes
+Fixed Size                  2924064 bytes
+Variable Size             452985312 bytes
+Database Buffers          838860800 bytes
+Redo Buffers               13852672 bytes
+Database mounted.
+SQL> drop database;
+
+Database dropped.
+////////////////////////////////////////////////
+SQL> select name, open_mode, database_role from v$database;
+
+NAME      OPEN_MODE            DATABASE_ROLE
+--------- -------------------- ----------------
+ORCL      READ WRITE           PRIMARY
+
+
+
+// Get location datafile on primary
+
+SQL> set line 500
+set pagesize 30
+select name from v$datafile;SQL> SQL>
+
+NAME
+/oracle/oradata/orcl/system01.dbf
+/oracle/oradata/orcl/sysaux01.dbf
+/oracle/oradata/orcl/undotbs01.dbf
+/oracle/oradata/orcl/users01.dbf
+
+SQL> select name from v$tempfile;
+
+NAME
+/oracle/oradata/orcl/temp01.dbf
+
+SQL> select member from v$logfile;
+
+MEMBER
+/oracle/oradata/orcl/redo03.log
+/oracle/oradata/orcl/redo02.log
+/oracle/oradata/orcl/redo01.log
+/oracle/oradata/orcl/redo04.log
+/oracle/oradata/orcl/redo05.log
+/oracle/oradata/orcl/redo06.log
+/oracle/oradata/orcl/redo07.log
+/oracle/oradata/orcl/standby_redo01.log
+/oracle/oradata/orcl/standby_redo02.log
+/oracle/oradata/orcl/standby_redo03.log
+/oracle/oradata/orcl/standby_redo04.log
+
+////////////////////////////////////////
+
+// create pfile
+SQL> create pfile='/home/oracle/pfile_orcl.ora' from spfile;
+
+File created.
+
+// copy pfile
+orcl.__data_transfer_cache_size=0
+orcl.__db_cache_size=637534208
+orcl.__java_pool_size=16777216
+orcl.__large_pool_size=33554432
+orcl.__oracle_base='/oracle'#ORACLE_BASE set from environment
+orcl.__pga_aggregate_target=436207616
+orcl.__sga_target=1308622848
+orcl.__shared_io_pool_size=67108864
+orcl.__shared_pool_size=536870912
+orcl.__streams_pool_size=0
+*.audit_file_dest='/oracle/admin/orcl/adump'
+*.audit_trail='db'
+*.compatible='12.1.0.2.0'
+*.control_files='/oracle/oradata/orcl/control01.ctl','/oracle/fast_recovery_area/orcl/control02.ctl'
+*.db_block_size=8192
+*.db_domain=''
+*.db_file_name_convert='ORCL_STBY','ORCL'
+*.db_name='orcl'
+*.db_unique_name='orcl'
+*.diagnostic_dest='/oracle'
+*.dispatchers='(PROTOCOL=TCP) (SERVICE=orclXDB)'
+*.fal_server='ORCL_STBY'
+*.local_listener='LISTENER_ORCL'
+*.log_archive_config='DG_CONFIG=(ORCL,ORCL_STBY)'
+*.log_archive_dest_2='SERVICE=ORCL_STBY NOAFFIRM ASYNC VALID_FOR=(ONLINE_LOGFILES,PRIMARY_ROLE) DB_UNIQUE_NAME=ORCL_STBY'
+*.log_archive_dest_state_2='ENABLE'
+*.log_archive_format='%t_%s_%r.arc'
+*.log_archive_max_processes=30
+*.log_file_name_convert='ORCL_STBY','ORCL'
+*.open_cursors=300
+*.pga_aggregate_target=412m
+*.processes=300
+*.remote_login_passwordfile='EXCLUSIVE'
+*.sga_target=1237m
+*.standby_file_management='AUTO'
+*.undo_tablespace='UNDOTBS1'
+
+// init di stb
+*.audit_file_dest='/oracle/admin/orcl/adump'
+*.audit_trail='db'
+*.compatible='12.1.0.2.0'
+*.control_files='/oracle/oradata/orcl/control01.ctl','/oracle/fast_recovery_area/orcl/control02.ctl'
+*.db_block_size=8192
+*.db_domain=''
+*.db_name='orcl'
+*.db_unique_name='orcl_stb'
+*.diagnostic_dest='/oracle'
+*.dispatchers='(PROTOCOL=TCP) (SERVICE=orclXDB)'
+*.fal_server='ORCL_STBY'
+*.local_listener='LISTENER_ORCL'
+*.log_archive_format='%t_%s_%r.arc'
+*.log_archive_max_processes=30
+*.open_cursors=300
+*.pga_aggregate_target=412m
+*.processes=300
+*.remote_login_passwordfile='EXCLUSIVE'
+*.sga_target=1237m
+*.standby_file_management='AUTO'
+*.undo_tablespace='UNDOTBS1'
+
+vi initorcl.ora
+// isikan diatas
+
+// startup dengan file yg telah dibuat
+SQL> startup nomount pfile='/export/home/oracle/iniorcl.ora';
+ORACLE instance started.
+
+Total System Global Area 1308622848 bytes
+Fixed Size                  2924064 bytes
+Variable Size             452985312 bytes
+Database Buffers          838860800 bytes
+Redo Buffers               13852672 bytes
+SQL>
+
+
+// buat spfile from pfile
+
+SQL> create spfile from pfile='/export/home/oracle/iniorcl.ora';
+
+File created.
+
+SQL> startup nomount force;
+ORACLE instance started.
+
+Total System Global Area 1308622848 bytes
+Fixed Size                  2924064 bytes
+Variable Size             452985312 bytes
+Database Buffers          838860800 bytes
+Redo Buffers               13852672 bytes
+SQL>
+
+
+// set listener, hapus dulu baru bikin baru next next aja
+[oracle@migrasi admin]$ netca
+
+Oracle Net Services Configuration:
+Stopping Oracle Net Listener:
+    Running Listener Control:
+      /oracle/product/12.2.0.1/orcl/bin/lsnrctl stop LISTENER
+    Listener Control complete.
+    Listener stopped successfully.
+    Deleted listener: LISTENER
+Configuring Listener:LISTENER
+Listener configuration complete.
+Oracle Net Listener Startup:
+    Running Listener Control:
+      /oracle/product/12.2.0.1/orcl/bin/lsnrctl start LISTENER
+    Listener Control complete.
+    Listener started successfully.
+Oracle Net Services configuration successful. The exit code is 0
+[oracle@migrasi admin]$
+
+
+// copy orapw pakai scp
+scp /oracle/product/12.2.0.1/orcl/dbs/orapworcl oracle@192.168.30.102:/oracle/product/12.2.0.1/orcl/dbs/orapworcl
+
+// buka rman target / (dalam stb)
+
+restore standby controlfile from service 'to_orcl';  
+
+[oracle@migrasi dbs]$ rman target /
+
+Recovery Manager: Release 12.1.0.2.0 - Production on Tue Oct 18 15:14:31 2022
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: ORCL (not mounted)
+
+RMAN> restore standby controlfile from service 'TO_AJSDB';
+
+Starting restore at 18-OCT-22
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=22 device type=DISK
+
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: using network backup set from service to_orcl
+channel ORA_DISK_1: restoring control file
+dbms_backup_restore.restoreCancel() failed
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of restore command at 10/18/2022 15:15:29
+ORA-19660: some files in the backup set could not be verified
+ORA-19661: datafile 0 could not be verified
+ORA-19849: error while reading backup piece from service to_orcl
+ORA-19504: failed to create file "/oracle/oradata/orcl/control01.ctl"
+ORA-27040: file create error, unable to create file
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 1
+
+RMAN> exit
+
+
+Recovery Manager complete.
+[oracle@migrasi dbs]$ cd /oracle/oradata/orcl/
+-bash: cd: /oracle/oradata/orcl/: No such file or directory
+[oracle@migrasi dbs]$ cd /oracle/oradata/
+[oracle@migrasi oradata]$ mkdir orcl
+[oracle@migrasi oradata]$ rman target /
+
+Recovery Manager: Release 12.1.0.2.0 - Production on Tue Oct 18 15:16:22 2022
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: ORCL (not mounted)
+
+RMAN> restore standby controlfile from service 'to_orcl';
+
+Starting restore at 18-OCT-22
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=1 device type=DISK
+
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: using network backup set from service to_orcl
+channel ORA_DISK_1: restoring control file
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of restore command at 10/18/2022 15:16:35
+ORA-19504: failed to create file "/oracle/fast_recovery_area/orcl/control02.ctl"
+ORA-27040: file create error, unable to create file
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 1
+ORA-19600: input file is control file  (/oracle/oradata/orcl/control01.ctl)
+ORA-19601: output file is control file  (/oracle/fast_recovery_area/orcl/control02.ctl)
+
+RMAN> exit
+
+
+Recovery Manager complete.
+[oracle@migrasi oradata]$ cd /oracle/fast_recovery_area/
+[oracle@migrasi fast_recovery_area]$ ls
+[oracle@migrasi fast_recovery_area]$ mkdir orcl
+[oracle@migrasi fast_recovery_area]$ rman target /
+
+Recovery Manager: Release 12.1.0.2.0 - Production on Tue Oct 18 15:17:00 2022
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: ORCL (not mounted)
+
+RMAN> restore standby controlfile from service 'to_orcl';
+
+Starting restore at 18-OCT-22
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=22 device type=DISK
+
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: using network backup set from service to_orcl
+channel ORA_DISK_1: restoring control file
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:01
+output file name=/oracle/oradata/orcl/control01.ctl
+output file name=/oracle/fast_recovery_area/orcl/control02.ctl
+Finished restore at 18-OCT-22
+
+RMAN>
+
+
+
+// mount database
+RMAN> alter database mount;
+
+Statement processed
+released channel: ORA_DISK_1
+
+// ubah pararel
+RMAN> show all;
+
+RMAN configuration parameters for database with db_unique_name ORCL_STB are:
+CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 7 DAYS;
+CONFIGURE BACKUP OPTIMIZATION OFF; # default
+CONFIGURE DEFAULT DEVICE TYPE TO DISK; # default
+CONFIGURE CONTROLFILE AUTOBACKUP OFF; # default
+CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '%F'; # default
+CONFIGURE DEVICE TYPE DISK PARALLELISM 1 BACKUP TYPE TO BACKUPSET; # default
+CONFIGURE DATAFILE BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE ARCHIVELOG BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/backup/rman/full_%u_%s_%p';
+CONFIGURE MAXSETSIZE TO UNLIMITED; # default
+CONFIGURE ENCRYPTION FOR DATABASE OFF; # default
+CONFIGURE ENCRYPTION ALGORITHM 'AES128'; # default
+CONFIGURE COMPRESSION ALGORITHM 'BASIC' AS OF RELEASE 'DEFAULT' OPTIMIZE FOR LOAD TRUE ; # default
+CONFIGURE RMAN OUTPUT TO KEEP FOR 7 DAYS; # default
+CONFIGURE ARCHIVELOG DELETION POLICY TO NONE; # default
+CONFIGURE SNAPSHOT CONTROLFILE NAME TO '/oracle/product/12.2.0.1/orcl/dbs/snapcf_orcl.f'; # default
+
+RMAN> CONFIGURE DEVICE TYPE DISK PARALLELISM 32 BACKUP TYPE TO COMPRESSED BACKUPSET;
+
+new RMAN configuration parameters:
+CONFIGURE DEVICE TYPE DISK PARALLELISM 32 BACKUP TYPE TO COMPRESSED BACKUPSET;
+new RMAN configuration parameters are successfully stored
+
+RMAN> restore standby controlfile from service 'to_orcl';
+
+
+// buat dibelakang layar
+[oracle@migrasi ~]$ vi restoredb.sh
+[oracle@migrasi ~]$ chmod 777 restoredb.sh
+[oracle@migrasi ~]$ ls
+initorcl.ora  profiledb  restoredb.sh
+[oracle@migrasi ~]$
+
+
+// isinya 
+restore database from service 'to_orcl';
+exit;
+
+// jalanin pakai nohup
+nohup rman target / @restoredb.sh > restoredb_20221018.log &
+
+
+// cek tail nya
+[oracle@migrasi ~]$ tail -f restoredb_20221018.log
+2> exit;
+Starting restore at 18-OCT-22
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=55 device type=DISK
+
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: using network backup set from service to_orcl
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring datafile 00001 to /oracle/oradata/orcl/system01.dbf
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:15
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: using network backup set from service to_orcl
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring datafile 00003 to /oracle/oradata/orcl/sysaux01.dbf
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:15
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: using network backup set from service to_orcl
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring datafile 00004 to /oracle/oradata/orcl/undotbs01.dbf
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:01
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: using network backup set from service to_orcl
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring datafile 00006 to /oracle/oradata/orcl/users01.dbf
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:15
+Finished restore at 18-OCT-22
+
+Recovery Manager complete.
+
+log_archive_config                   string      DG_CONFIG=(PRODDB, proddb_stb)
+alter system set log_archive_config='DG_CONFIG=(PRODDB,proddb_stb)';
+
+alter system set fal_client='tostb';
+
+alter system set fal_server='proddbdc';
+
+SQL> show parameter fal
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+fal_client                           string      db-uat:1521/proddb_stb
+fal_server                           string      vco-rldb:1521/proddb
+SQL>
+
+alter system set log_archive_config='DG_CONFIG=(INFAMDM,INFAMDM_STB)'; // di primary dan juga di stb
+
+// di primary
+alter system set log_archive_config='DG_CONFIG=(ORCLMAINPJT1,ORCLMAINPJT1_STB)'; // di primary dan juga di stb
+
+alter system set log_archive_dest_2='service=TO_ORCLMAINPJT1_STB lgwr DB_UNIQUE_NAME=ORCLMAINPJT1_STB VALID_FOR=(ALL_LOGFILES,ALL_ROLES)';
+
+alter system set log_archive_dest_state_2='defer';
+
+alter system set log_archive_dest_state_2='enable';
+
+select error, dest_id from v$archive_dest where dest_id < 5;
+
+Daftarkan Service Name Standby di Primary
+SQL> show parameter service_name
+SQL> alter system set service_names='(ORCLMAINPJT1_STB,ORCLMAINPJT1)';
+
+TO_ORCLMAINPJT1_STB
+TO_ORCLMAINPJT1_PROD =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = orclsvr02 )(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = ORCLMAINPJT1)
+    )
+  )
+alter system set log_archive_config='DG_CONFIG=(ORCLMAIN,ORCLMAINPJT1_STB)'; // di primary dan juga di stb
+
+
+// di stb
+#Fal_client isinya tns dirinya sendiri
+#Fal_server isinya tns primary
+
+SQL> show parameter fal
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+fal_client                           string      jakdbstb
+fal_server                           string      prodjakdb
+
+
+alter system set fal_client='to_ajsdb_stb';
+
+alter system set fal_server='to_ajsdb';
+
+alter database recover managed standby database disconnect;
+
+alter database recover managed standby database cancel;
+
+alter database open read only;
